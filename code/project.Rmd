@@ -27,8 +27,8 @@ library(dplyr)
 library(car)
 library(MuMIn)
 library(corrr)
-
-parkinsons <- read.csv("parkinsons.data")
+nlist.files("data")
+parkinsons <- read.csv("../data/parkinsons.data")
 glimpse(parkinsons)
 ```
 
@@ -39,6 +39,9 @@ parkinsons <- parkinsons %>%
   mutate(status=factor(status, labels=c("Healthy", "Parkinsons"))) %>%
   drop_na()
 glimpse(parkinsons)
+
+write.csv(parkinsons, "../data/parkinsons_clean.csv", row.names = FALSE)
+
 ```
 
 ```{r}

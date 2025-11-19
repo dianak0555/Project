@@ -8,22 +8,256 @@ date: "2025-11-19"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+```{r}
+#pull cleaned data from cleanData folder
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+parkinsons <- read.csv("../../data/cleanData/parkinsons_clean.csv")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+```{r}
+#In sections below, we test the shape/normality and homogeneity for each variable to determine whether parametric or nonparametric tests are appropriate. For shape/normality, we are also using histogram and qq line to visualize the dataset. 
+#After testing assumptions with original data for each variable, we also transformed the data using log(1+p), and the result was still non normal.
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+#1. Frequency: Assumptions
+#shape/normality
+parkinsons <- parkinsons %>%
+  mutate(MDVP.Fo.Hz. = log1p(MDVP.Fo.Hz.))
+
+parkinsons %>%
+  ggplot(aes(x=MDVP.Fo.Hz., fill=status))+
+  geom_histogram(aes(y=..density..), color="black", linewidth=0.2)+
+  geom_density(alpha=0.1, linewidth=.5)+
+  facet_wrap(~status)+
+  labs(title="Distribution of Frequency")+
+  scale_fill_brewer(palette="Pastel1")
+
+parkinsons %>%
+  ggplot(aes(sample=MDVP.Fo.Hz.)) +
+  geom_qq()+
+  geom_qq_line()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Frequency")
+
+#normality shapiro test for each Healthy or Parkinson individuals. The result give us p value less than 0.05, which means that our data is not normal
+parkinsons %>%
+  filter(status=="Healthy") %>%
+  pull(MDVP.Fo.Hz.) %>%
+  shapiro.test()
+ 
+parkinsons %>%
+  filter(status=="Parkinsons") %>%
+  pull(MDVP.Fo.Hz.) %>%
+  shapiro.test()
+
+#equal variance=> p<0.05, data does not satisfy homogeneity
+fligner.test(MDVP.Fo.Hz. ~ status, data = parkinsons)
+
+```
+```{r}
+#Because assumptions of normality and equal variance were violated, a Wilcoxon rank-sum test was chosen to compare groups. This non-parametric test does not assume normality.
+wilcox.test(MDVP.Fo.Hz. ~ status, data = parkinsons)
+
+#Here, we compare the mean and median values of frequency in Healthy vs Parkinson individuals in a table.
+parkinsons %>%
+  group_by(status) %>%
+  summarise(median_freq = median(MDVP.Fo.Hz., na.rm = TRUE), mean_freq   = mean(MDVP.Fo.Hz., na.rm = TRUE))
+
+#The Wilcoxon test showed that Parkinson’s patients had significantly lower frequency (p<0.05), supporting the hypothesis that PD reduces vocal frequency
+
+```
+```{r}
+#We repeat the same measures as above for Jitter variable.
+#2. Jitter (frequency variation): Assumptions
+#shape/normality
+parkinsons <- parkinsons %>%
+  mutate(MDVP.Jitter... = log1p(MDVP.Jitter...))
+
+
+parkinsons %>%
+  ggplot(aes(x=MDVP.Jitter..., fill=status))+
+  geom_histogram(aes(y=..density..), color="black", linewidth=0.2)+
+  geom_density(alpha=0.1, linewidth=.5)+
+  facet_wrap(~status)+
+  labs(title="Distribution of Frequency Variation")+
+  scale_fill_brewer(palette="Pastel1")
+
+parkinsons %>%
+  ggplot(aes(sample=MDVP.Jitter...)) +
+  geom_qq()+
+  geom_qq_line()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Frequency Variation")
+
+#normality test=> p<0.05, data not normal
+parkinsons %>%
+  filter(status=="Healthy") %>%
+  pull(MDVP.Jitter...) %>%
+  shapiro.test()
+ 
+parkinsons %>%
+  filter(status=="Parkinsons") %>%
+  pull(MDVP.Jitter...) %>%
+  shapiro.test()
+
+#equal variance=> p<0.05, data does not satisfy homogeneity
+fligner.test(MDVP.Jitter... ~ status, data = parkinsons)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+#Because assumptions of normality and equal variance were violated, a Wilcoxon rank-sum test was chosen to compare groups. This non-parametric test does not assume normality.
+
+wilcox.test(MDVP.Jitter... ~ status, data = parkinsons)
+
+parkinsons %>%
+  group_by(status) %>%
+  summarise(median_jitter = median(MDVP.Jitter..., na.rm = TRUE), mean_jitter   = mean(MDVP.Jitter..., na.rm = TRUE))
+
+#The Wilcoxon test showed that Parkinson’s patients had significantly higher frequency variation (p<0.05), supporting the hypothesis.
+
+```
+
+```{r}
+#We repeat the same measures as above for Shimmer variable.
+#3. Shimmer (amplitude variation): Assumptions
+#shape/normality
+parkinsons <- parkinsons %>%
+  mutate(MDVP.Shimmer.dB. = log1p(MDVP.Shimmer.dB.))
+
+#The graphs are heavily skewed left even after the transformation.
+parkinsons %>%
+  ggplot(aes(x=MDVP.Shimmer.dB.))+
+  geom_histogram()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Amplitude Variation")
+
+parkinsons %>%
+  ggplot(aes(sample=MDVP.Shimmer.dB.)) +
+  geom_qq()+
+  geom_qq_line()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Amplitude Variation")
+
+#normality test=> p<0.05, data not normal
+parkinsons %>%
+  filter(status=="Healthy") %>%
+  pull(MDVP.Shimmer.dB.) %>%
+  shapiro.test()
+ 
+parkinsons %>%
+  filter(status=="Parkinsons") %>%
+  pull(MDVP.Shimmer.dB.) %>%
+  shapiro.test()
+
+#equal variance=> p<0.05, data does not satisfy homogeneity
+fligner.test(MDVP.Shimmer.dB. ~ status, data = parkinsons)
+```
+
+```{r}
+#Because assumptions of normality and equal variance were violated, a Wilcoxon rank-sum test was chosen to compare groups. This non-parametric test does not assume normality.
+wilcox.test(MDVP.Shimmer.dB. ~ status, data = parkinsons)
+
+parkinsons %>%
+  group_by(status) %>%
+  summarise(median_shimmer = median(MDVP.Shimmer.dB., na.rm = TRUE), mean_shimmer   = mean(MDVP.Shimmer.dB., na.rm = TRUE))
+
+#The Wilcoxon test showed that Parkinson’s patients had significantly higher amplitude variation (p<0.05), supporting the hypothesis.
+
+```
+
+```{r}
+#We repeat the same measures as above for HNR variable.
+#Harmonic-to-noise ratio (voice clarity): Assumptions
+#shape/normality
+parkinsons <- parkinsons %>%
+  mutate(HNR = log1p(HNR))
+
+#The graphs are heavily skewed right.
+parkinsons %>%
+  ggplot(aes(x=HNR))+
+  geom_histogram()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Amplitude Variation")
+
+parkinsons %>%
+  ggplot(aes(sample=HNR)) +
+  geom_qq()+
+  geom_qq_line()+
+  facet_wrap(~status)+
+  labs(title="Distribution of Amplitude Variation")
+
+#normality test=> p<0.05, data not normal
+parkinsons %>%
+  filter(status=="Healthy") %>%
+  pull(HNR) %>%
+  shapiro.test()
+ 
+parkinsons %>%
+  filter(status=="Parkinsons") %>%
+  pull(HNR) %>%
+  shapiro.test()
+
+#equal variance=> p<0.05, data does not satisfy homogeneity
+fligner.test(HNR ~ status, data = parkinsons)
+```
+
+```{r}
+#Because assumptions of normality and equal variance were violated, a Wilcoxon rank-sum test was chosen to compare groups. This non-parametric test does not assume normality.
+wilcox.test(HNR ~ status, data = parkinsons)
+
+parkinsons %>%
+  group_by(status) %>%
+  summarise(median_HNR = median(HNR, na.rm = TRUE), mean_HNR = mean(HNR, na.rm = TRUE))
+
+#The Wilcoxon test showed that Parkinson’s patients had significantly lower HNR (p<0.05), supporting the hypothesis.
+
+```
+
+```{r}
+#We reshape the dataset to a longer format so that all voice measures are stored in a single column. This allows us to facet plots by variable and easily compare patterns across features. 
+
+#We also scale each variable (z-score) within its group to place them on the same scale. Because the original voice measures use different units, scaling helps make the boxplots comparable across variables and avoid misleading differences caused by unit differences.
+
+parkinsons_new <- parkinsons %>%
+  pivot_longer(cols=c(MDVP.Fo.Hz., MDVP.Jitter..., MDVP.Shimmer.dB., HNR), names_to="Variable", values_to="Value") %>%
+  group_by(Variable) %>%
+  mutate(Value_scaled = scale(Value)) 
+
+glimpse(parkinsons_new)
+```
+
+```{r}
+#Create human-readable labels for each variable so the figure is clearer to interpret. 
+
+labeled = as_labeller(c("MDVP.Fo.Hz." = "Average Frequency (Fo)", "MDVP.Jitter..." = "Jitter (%)", "MDVP.Shimmer.dB." = "Shimmer (dB)", "HNR" = "Harmonics-to-Noise Ratio (HNR)"))
+
+#Plot scaled voice measures by status, faceted by variable. Scaling helps to compare distributions across features that originally had different units. Then we facet the plots to compare how each voice parameter differs between Healthy and Parkinson's groups. We also add annotations to show statistical significance (***) and put caption below the graph to explain the annotations.
+
+ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
+  geom_boxplot()+
+  facet_wrap(~Variable, labeller="labeled")+
+  labs(title="Comparison of Voice Features by Status", x="Status", y="Value", caption = "Note: α was divided by 4 to adjust for testing 4 variables.\n*** indicates p < 0.001/4.")+
+  annotate("text", x=1.5, y=5.3, label="***", size=5)+
+  annotate("segment", x=1, xend=2, y=5, yend=5) 
+```
+```{r}
+#Below graphs show similar comparsion, but in violin plots. Violin plots show the full shape of the distribution including skew, spread, and multimodality, which boxplots alone cannot reveal. These graphs help communicate that many voice features are non-nomal, which support the decision to use non-parametric tests.
+
+ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
+  geom_violin()+
+  facet_wrap(~Variable, labeller="labeled")+
+  labs(title="Comparison of Voice Features by Status", x="Status", y="Value", caption = "Note: α was divided by 4 to adjust for testing 4 variables.\n*** indicates p < 0.001/4.")+
+  annotate("text", x=1.5, y=5.3, label="***", size=5)+
+  annotate("segment", x=1, xend=2, y=5, yend=5) 
+```
+
+
+```{r}
+#Below is a correlation heatmap which shows how the different voice features relate to each other. This can also provide context for our result, as it suggests that if some features are strongly correlated, parkinson's disease could affect multiple vocal features in related ways. The color gradient helps read the graphs better in positive vs negative correlation.
+
+parkinsons %>%
+  correlate() %>%
+  rplot(colors = c("red","white","blue")) +
+  labs(title="Correlation Between Voice Features")
+```
+

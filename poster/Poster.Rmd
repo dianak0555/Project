@@ -1,5 +1,5 @@
 ---
-title: Vocal Biomarkers of Parkinson’s Disease That Differentiate PD From Healthy Speech
+title: Vocal Biomarkers That Differentiate PD Patients from Healthy Individuals
 author:
   - name: Diana Kim
 affiliation:
@@ -23,7 +23,8 @@ library(tidyverse)
 
 # Introduction
 
-Parkinson’s disease (PD) affects motor control of the vocal folds, producing measurable acoustic changes in speech. PD often affects the voice stability and clarity, leading to changes in fundamental frequency (Fo), frequency variability (Jitter), amplitude variability (Shimmer), and Harmonics-to-Noise Ratio (HNR). Acoustic analysis may provide a non-invasive and cost-effective biomarker for PD.
+Parkinson’s disease (PD) affects motor control of the vocal folds, producing measurable acoustic changes in speech. PD often affects the voice stability and clarity. My project investigates whether specific vocal features (including fundamental frequency (Fo), jitter (frequency variation), shimmer (amplitude variation), and harmonics-to-noise ratio (HNR)) differ between healthy individuals and those diagnosed with PD. These analyses evaluate whether vocal instability can serve as a potential low-cost biomarker for PD detection.
+
 
 # Research Questions / Hypotheses
 
@@ -69,16 +70,4 @@ knitr::include_graphics("../figures/histogram.png")
 *Figure 4. Frequency Histogram showing bimodal, non normal distributions of data, which validates the use of nonparametric tests.*
 
 ```{r}
-knitr::include_graphics("../figures/scatterplots.png")
-```
-*Figure 5. Scatterplot illustrating relationships between vocal features. Future models will evaluate predictive strength.*
-
-Future work will expand acoustic analysis and model development by incorporating additional nonlinear features (RPDE, D2, PPE) for more sensitive biomarkers and validating patterns on larger and more diverse voice datasets.
-
-
-# References
-Cleveland Clinic Medical Professionals. (2025, October 20). *Tips for improving communication in people with Parkinson’s disease*. Cleveland Clinic. https://my.clevelandclinic.org/health/articles/9392-speech-therapy-for-parkinsons-disease
-
-Pavel Jiřík. “Phonexia Has Released Its Most Accurate Voice Analysis Software for Forensic Experts.” PHONEXIA, 18 Jan. 2024, www.phonexia.com/blog/phonexia-has-released-its-most-accurate-voice-analysis-software-for-forensic-experts/. Accessed 2 Dec. 2025.
-
-Ukani, V. (2020). *Parkinson's Disease Data Set* [Dataset]. Kaggle. https://www.kaggle.com/datasets/vikasukani/parkinsons-disease-data-set
+knitr::include_graphics("../figures/scatterplots.

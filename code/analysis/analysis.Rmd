@@ -284,3 +284,14 @@ scatter
 
 
 ```{r}
+ggsave("../../figures/violin.png", violin, width = 6, height = 5, dpi = 300)
+
+ggsave("../../figures/boxplot.png", boxplot, width = 6, height = 5, dpi = 300)
+
+ggsave("../../figures/scatterplots.png", scatter, width = 6, height = 5, dpi = 300)
+
+ggsave("../../figures/histogram.png", histogram, width = 6, height = 5, dpi = 300)
+
+
+```
+

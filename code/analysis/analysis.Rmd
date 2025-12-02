@@ -10,7 +10,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 #pull cleaned data from cleanData folder
-
+library(tidyverse)
+library(dplyr)
+library(car)
+library(MuMIn)
+library(corrr)
+library(ggplot2)
+library(patchwork)
 parkinsons <- read.csv("../../data/cleanData/parkinsons_clean.csv")
 ```
 
@@ -24,7 +30,7 @@ parkinsons <- read.csv("../../data/cleanData/parkinsons_clean.csv")
 parkinsons <- parkinsons %>%
   mutate(MDVP.Fo.Hz. = log1p(MDVP.Fo.Hz.))
 
-parkinsons %>%
+histogram <- parkinsons %>%
   ggplot(aes(x=MDVP.Fo.Hz., fill=status))+
   geom_histogram(aes(y=..density..), color="black", linewidth=0.2)+
   geom_density(alpha=0.1, linewidth=.5)+
@@ -233,17 +239,18 @@ labeled = as_labeller(c("MDVP.Fo.Hz." = "Average Frequency (Fo)", "MDVP.Jitter..
 
 #Plot scaled voice measures by status, faceted by variable. Scaling helps to compare distributions across features that originally had different units. Then we facet the plots to compare how each voice parameter differs between Healthy and Parkinson's groups. We also add annotations to show statistical significance (***) and put caption below the graph to explain the annotations.
 
-ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
+boxplot <- ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
   geom_boxplot()+
   facet_wrap(~Variable, labeller="labeled")+
   labs(title="Comparison of Voice Features by Status", x="Status", y="Value", caption = "Note: α was divided by 4 to adjust for testing 4 variables.\n*** indicates p < 0.001/4.")+
   annotate("text", x=1.5, y=5.3, label="***", size=5)+
   annotate("segment", x=1, xend=2, y=5, yend=5) 
 ```
+
 ```{r}
 #Below graphs show similar comparsion, but in violin plots. Violin plots show the full shape of the distribution including skew, spread, and multimodality, which boxplots alone cannot reveal. These graphs help communicate that many voice features are non-nomal, which support the decision to use non-parametric tests.
 
-ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
+violin <- ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
   geom_violin()+
   facet_wrap(~Variable, labeller="labeled")+
   labs(title="Comparison of Voice Features by Status", x="Status", y="Value", caption = "Note: α was divided by 4 to adjust for testing 4 variables.\n*** indicates p < 0.001/4.")+
@@ -251,13 +258,29 @@ ggplot(parkinsons_new, aes(x=status, y=Value_scaled, fill=status))+
   annotate("segment", x=1, xend=2, y=5, yend=5) 
 ```
 
-
 ```{r}
-#Below is a correlation heatmap which shows how the different voice features relate to each other. This can also provide context for our result, as it suggests that if some features are strongly correlated, parkinson's disease could affect multiple vocal features in related ways. The color gradient helps read the graphs better in positive vs negative correlation.
+#I replaced the previous heatmap with a scatterplot, as there wasn't clear linear relationship between the variables and this figure would better represent the relationship.
 
-parkinsons %>%
-  correlate() %>%
-  rplot(colors = c("red","white","blue")) +
-  labs(title="Correlation Between Voice Features")
+p1 <- ggplot(parkinsons, aes(x = MDVP.Fo.Hz., y = MDVP.Jitter..., color = status)) +
+  geom_point() +
+  labs(x = "Fo", y = "Jitter (%)")
+
+p2 <- ggplot(parkinsons, aes(x = MDVP.Fo.Hz., y = MDVP.Shimmer.dB., color = status)) +
+  geom_point() +
+  labs(x = "Fo", y = "Shimmer (dB)")
+
+p3 <- ggplot(parkinsons, aes(x = MDVP.Jitter..., y = MDVP.Shimmer.dB., color = status)) +
+  geom_point() +
+  labs(x = "Jitter (%)", y = "Shimmer (dB)")
+
+p4 <- ggplot(parkinsons, aes(x = MDVP.Jitter..., y = HNR, color = status)) +
+  geom_point() +
+  labs(x = "Jitter (%)", y = "HNR")
+
+scatter <- (p1 | p2) / (p3 | p4)
+scatter
+
 ```
 
+
+```{r}

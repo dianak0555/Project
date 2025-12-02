@@ -1,0 +1,84 @@
+---
+title: Vocal Biomarkers of Parkinson’s Disease That Differentiate PD From Healthy Speech
+author:
+  - name: Diana Kim
+affiliation:
+  - num: 1
+    address: School of Biological Sciences, Georgia Tech
+output: 
+  posterdown::posterdown_html:
+    self_contained: false
+
+---
+
+```{r, include=FALSE}
+knitr::write_bib(c('knitr','rmarkdown','posterdown','pagedown'), 'packages.bib')
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(tidyverse)
+```
+
+# Introduction
+
+Parkinson’s disease (PD) affects motor control of the vocal folds, producing measurable acoustic changes in speech. PD often affects the voice stability and clarity, leading to changes in fundamental frequency (Fo), frequency variability (Jitter), amplitude variability (Shimmer), and Harmonics-to-Noise Ratio (HNR). Acoustic analysis may provide a non-invasive and cost-effective biomarker for PD.
+
+# Research Questions / Hypotheses
+
+1. Are vocal features significantly different between Healthy and Parkinson’s individuals?  
+2. **Hypothesis:** Compared to healthy individuals, PD patients will show...
+   - lower vocal frequency  
+   - higher jitter and shimmer  
+   - lower HNR 
+
+# Methods
+
+- Dataset includes 195 voice recordings from 31 individuals (23 with Parkinson’s disease).  
+- Measures analyzed: **Fo**, **Jitter**, **Shimmer**, **HNR**, and **status (Healthy vs PD)**.  
+- All acoustic variables were log(1 + x) transformed due to heavy skew.  
+- Normality and variance assumptions were tested using histograms, QQ-plots, Shapiro–Wilk, and Fligner tests.  
+- Because all variables violated assumptions, **Wilcoxon rank-sum tests** were used for group comparisons.  
+- Figures were generated in R (ggplot2) and saved into the `figures/` directory.
+
+```{r}
+knitr::include_graphics("../figures/recording.jpg")
+
+```
+*Figure 1. Example of the voice-recording setup used to generate the acoustic features in the Parkinson’s dataset*
+
+# Results
+
+```{r}
+knitr::include_graphics("../figures/boxplot.png")
+```
+*Figure 2. Boxplot showing distribution of transformed vocal features by PD status. PD individuals showed significantly lower Fo and HNR, and significantly higher Jitter and Shimmer (all p < 0.05).This supports the hypothesis that PD affects multiple acoustic features.*
+
+
+```{r}
+knitr::include_graphics("../figures/violin.png")
+```
+*Figure 3. Violin plot showing the full distributional shape of transformed vocal features by PD status. Plots reveal skewness, spread, and multimodality in each feature’s distribution. PD individuals show visibly broader and more asymmetric distributions for Jitter and Shimmer, indicating greater vocal instability.*
+
+# Next Steps
+
+```{r}
+knitr::include_graphics("../figures/histogram.png")
+```
+*Figure 4. Frequency Histogram showing bimodal, non normal distributions of data, which validates the use of nonparametric tests.*
+
+```{r}
+knitr::include_graphics("../figures/scatterplots.png")
+```
+*Figure 5. Scatterplot illustrating relationships between vocal features. Future models will evaluate predictive strength.*
+
+Future work will expand acoustic analysis and model development by incorporating additional nonlinear features (RPDE, D2, PPE) for more sensitive biomarkers and validating patterns on larger and more diverse voice datasets.
+
+
+# References
+Cleveland Clinic Medical Professionals. (2025, October 20). *Tips for improving communication in people with Parkinson’s disease*. Cleveland Clinic. https://my.clevelandclinic.org/health/articles/9392-speech-therapy-for-parkinsons-disease
+
+Pavel Jiřík. “Phonexia Has Released Its Most Accurate Voice Analysis Software for Forensic Experts.” PHONEXIA, 18 Jan. 2024, www.phonexia.com/blog/phonexia-has-released-its-most-accurate-voice-analysis-software-for-forensic-experts/. Accessed 2 Dec. 2025.
+
+Ukani, V. (2020). *Parkinson's Disease Data Set* [Dataset]. Kaggle. https://www.kaggle.com/datasets/vikasukani/parkinsons-disease-data-set
